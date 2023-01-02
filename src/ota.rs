@@ -96,7 +96,6 @@ impl ota::FirmwareInfoLoader for EspFirmwareInfoLoader {
                     .as_ref()
                     .unwrap()
             };
-            info!("esp_app_desc_t = {:?}", app_desc);
             Ok(Newtype(app_desc).into())
         } else {
             Err(EspError::from_infallible::<ESP_ERR_INVALID_SIZE>().into())
