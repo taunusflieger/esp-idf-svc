@@ -227,6 +227,47 @@ impl<T: NvsPartitionId> EspNvs<T> {
         }
     }
 
+    pub fn len_str(&self, name: &str) -> Result<Option<usize>, EspError> {
+        let c_key = CString::new(name).unwrap();
+
+        #[allow(unused_assignments)]
+        let mut len = 0;
+
+        match unsafe { nvs_get_str(self.1, c_key.as_ptr(), ptr::null_mut(), &mut len as *mut _) } {
+            ESP_ERR_NVS_NOT_FOUND => Ok(None),
+            err => {
+                // bail on error
+                esp!(err)?;
+
+                Ok(Some(len))
+            }
+        }
+    }
+
+    pub fn get_str<'a>(&self, name: &str, buf: &'a mut [u8]) -> Result<Option<&'a [u8]>, EspError> {
+        let c_key = CString::new(name).unwrap();
+
+        #[allow(unused_assignments)]
+        let mut len = 0;
+        match unsafe {
+            len = buf.len();
+            nvs_get_str(
+                self.1,
+                c_key.as_ptr(),
+                buf.as_mut_ptr() as *mut _,
+                &mut len as *mut _,
+            )
+        } {
+            ESP_ERR_NVS_NOT_FOUND => Ok(None),
+            err => {
+                // bail on error
+                esp!(err)?;
+
+                Ok(Some(buf))
+            }
+        }
+    }
+
     fn len(&self, name: &str) -> Result<Option<usize>, EspError> {
         let c_key = CString::new(name).unwrap();
 
